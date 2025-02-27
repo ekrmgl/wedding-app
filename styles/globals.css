@@ -1,0 +1,12 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+/* Tema galerisi stilleri */
+.theme-card {
+  @apply transition-all duration-200 hover:shadow-md p-2 rounded-md;
+}
+
+.theme-preview {
+  @apply border rounded-md overflow-hidden;
+}
