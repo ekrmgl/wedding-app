@@ -7,6 +7,7 @@ import { useWebsite } from '@/context/WebsiteContext';
 import ThemeDecorations from '../templates/ThemeDecorations';
 import HomeTemplate from '../templates/HomeTemplate';
 import ScheduleTemplate from '../templates/ScheduleTemplate';
+import GalleryTemplate from '../templates/GalleryTemplate';
 
 interface PreviewPanelProps {
   activePage?: string;
@@ -17,7 +18,6 @@ export default function PreviewPanel({ activePage = 'home' }: PreviewPanelProps)
   const { getCurrentTheme, getCurrentColor } = useTheme();
   const currentTheme = getCurrentTheme();
   const primaryColor = getCurrentColor();
-  console.log(currentTheme);
   const [viewMode, setViewMode] = useState('desktop'); // desktop, tablet, mobile
   
   // Aktif sayfaya göre ilgili template'i göster
@@ -27,6 +27,8 @@ export default function PreviewPanel({ activePage = 'home' }: PreviewPanelProps)
         return <HomeTemplate />;
       case 'schedule':
         return <ScheduleTemplate />;
+      case 'gallery':
+        return <GalleryTemplate />;
       default:
         return (
           <div className="py-8 px-6 text-center">
@@ -67,13 +69,13 @@ export default function PreviewPanel({ activePage = 'home' }: PreviewPanelProps)
                 fontFamily: currentTheme?.fontFamily,
                 color: primaryColor
               }}>
-                {content.title}
+                {/* {content.title} */} titleeeeeeeeeeee
               </h1>
             </div>
             
             {/* Navigation */}
             <div className="border-t border-b py-4">
-              <ul className="flex justify-center space-x-6 text-sm" style={{ 
+              <ul className="flex justify-center space-x-6 text-sm flex-wrap" style={{ 
                 fontFamily: currentTheme?.fontFamily 
               }}>
                 <li className={`${activePage === 'home' ? 'border-b-2 pb-1' : ''}`} style={{ 

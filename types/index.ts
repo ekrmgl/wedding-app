@@ -26,38 +26,6 @@ export interface ThemeSelection {
   themeId: string;
   colorId: string;
 }
-
-// WebsiteContent tanımlaması da burada olabilir
-export interface WebsiteContent {
-  title: string;
-  coupleNames: string[];
-  headerImage: string;
-  welcomeMessage: string;
-  heroLayout: string;
-  slideshowImages: string[];
-  weddingDate: string;
-  scheduleHeaderImage: string;
-  scheduleDescription: string;
-  schedule: Array<{
-    type: string;
-    name: string;
-    startDate: string;
-    startTime: string;
-    endDate?: string;
-    endTime?: string;
-    venueName: string;
-    streetAddress?: string;
-    aptFloor?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-    country: string;
-    isPublic: boolean;
-    allowRsvp: boolean;
-  }>;
-  // Diğer alanlar...
-}
-
 // HeroLayoutType enum'ı
 export enum HeroLayoutType {
   NONE = "none",
@@ -65,4 +33,74 @@ export enum HeroLayoutType {
   SIDE_BY_SIDE = "side-by-side",
   SLIDESHOW = "slideshow",
   MARQUEE = "marquee"
+}
+
+export interface User {
+  id: string;
+  name?: string;
+  email: string;
+  image?: string;
+  emailVerified?: Date;
+}
+
+export interface GalleryPhoto {
+  id: string;
+  url: string;
+  description: string;
+}
+
+export interface GalleryVideo {
+  id: string;
+  url: string;
+  caption: string;
+  provider: 'youtube' | 'vimeo';
+}
+
+export interface ScheduleEvent {
+  id: string;
+  type: string;
+  name: string;
+  startDate: string;
+  startTime: string;
+  endDate?: string;
+  endTime?: string;
+  venueName: string;
+  streetAddress?: string;
+  aptFloor?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country: string;
+  isPublic: boolean;
+  allowRsvp: boolean;
+}
+
+export interface WebsiteContent {
+  welcomeMessage: string;
+  coupleNames: string[];
+  weddingDate: string;
+  heroLayout: string;
+  slideshowImages: string[];
+  galleryHeaderImage: string;
+  galleryDescription: string;
+  galleryPhotos: GalleryPhoto[];
+  galleryVideos: GalleryVideo[];
+  galleryVisible: boolean;
+  showFeaturedGallery: boolean;
+  schedule: ScheduleEvent[];
+  scheduleHeaderImage: string;
+  scheduleDescription: string;
+}
+
+export interface WeddingSite {
+  _id: string;
+  userId: string;
+  title: string;
+  urlSlug: string;
+  themeId: string;
+  themeColor: string;
+  isPublished: boolean;
+  content: WebsiteContent;
+  createdAt: string;
+  updatedAt: string;
 }

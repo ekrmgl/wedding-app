@@ -27,7 +27,7 @@ export default function ScheduleTemplate() {
               }}
               />
       {/* Header Image */}
-      {content.scheduleHeaderImage && (
+      {content?.scheduleHeaderImage && (
         <div className="mb-8 flex justify-center">
           <img
             src={content.scheduleHeaderImage}
@@ -40,7 +40,7 @@ export default function ScheduleTemplate() {
       {/* Date */}
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold" style={{ color: primaryColor }}>
-          {content.weddingDate ? content.weddingDate : "FRIDAY, MAY 30, 2025"}
+          {content?.weddingDate ? content?.weddingDate : "FRIDAY, MAY 30, 2025"}
         </h2>
       </div>
       
@@ -51,7 +51,7 @@ export default function ScheduleTemplate() {
       
       {/* Events */}
       <div className="max-w-xl mx-auto space-y-10">
-        {content.schedule.map((event, index) => (
+        {content?.schedule.map((event, index) => (
           <div key={index} className="text-center">
             <h3 className="text-xl mb-2" style={{ color: primaryColor }}>
               <a href="#" className="hover:underline">{event.name}</a>
@@ -70,7 +70,7 @@ export default function ScheduleTemplate() {
           </div>
         ))}
         
-        {content.schedule.length > 0 && (
+        {content?.schedule?.length || 0 > 0 && (
           <div className="flex justify-center space-x-4 mt-8">
             <button className="bg-gray-800 text-white px-6 py-2 rounded">Map</button>
             <button className="bg-blue-600 text-white px-6 py-2 rounded">Add to calendar</button>
@@ -79,7 +79,7 @@ export default function ScheduleTemplate() {
       </div>
       
       {/* Description */}
-      {content.scheduleDescription && (
+      {content?.scheduleDescription && (
         <div className="mt-10 max-w-lg mx-auto text-center">
           <p>{content.scheduleDescription}</p>
         </div>

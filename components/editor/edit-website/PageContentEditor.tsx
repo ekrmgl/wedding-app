@@ -5,6 +5,7 @@ import { useState } from 'react';
 import HomePageEditor from './pages/HomePageEditor';
 import SchedulePageEditor from './pages/SchedulePageEditor';
 import { useTheme } from '@/context/ThemeContext';
+import GalleryPageEditor from './pages/GalleryPageEditor';
 
 interface PageContentEditorProps {
   page: string;
@@ -27,7 +28,7 @@ export default function PageContentEditor({ page, onBack }: PageContentEditorPro
       case 'wedding-party':
         return <div className="p-6">Wedding Party page editor coming soon</div>;
       case 'gallery':
-        return <div className="p-6">Gallery page editor coming soon</div>;
+        return <GalleryPageEditor />;
       case 'things-to-do':
         return <div className="p-6">Things To Do page editor coming soon</div>;
       case 'faqs':

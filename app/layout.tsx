@@ -1,4 +1,5 @@
 // app/layout.tsx
+import { NextAuthProvider } from '@/components/NextAuthProvider';
 import { WebsiteProvider } from '@/context/WebsiteContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import '@/styles/globals.css';
@@ -17,11 +18,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ThemeProvider>
-          <WebsiteProvider>
-            {children}
-          </WebsiteProvider>
-        </ThemeProvider>
+        <NextAuthProvider>
+          <ThemeProvider>
+            <WebsiteProvider>
+              {children}
+            </WebsiteProvider>
+          </ThemeProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );

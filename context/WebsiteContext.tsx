@@ -1,113 +1,87 @@
 // context/WebsiteContext.tsx
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { WebsiteContent, GalleryPhoto, GalleryVideo } from '@/types';
 
-// Düğün websitesi için temel alanlar
-interface WebsiteContent {
-  title: string;
-  coupleNames: string[];
-  headerImage: string;
-  welcomeMessage: string;
-  heroLayout: string;
-  slideshowImages: string[];
-  weddingDate: string;
-  scheduleHeaderImage: string;
-  scheduleDescription: string;
-  schedule: Array<{
-    type: string;
-    name: string;
-    startDate: string;
-    startTime: string;
-    endDate?: string;
-    endTime?: string;
-    venueName: string;
-    streetAddress?: string;
-    aptFloor?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-    country: string;
-    isPublic: boolean;
-    allowRsvp: boolean;
-  }>;
-  // Diğer sayfalar için içerik alanları buraya eklenebilir
+interface WebsiteContextProps {
+  content: WebsiteContent | null;
+  isLoading: boolean;
+  isSaving: boolean;
+  lastSaved: Date | null;
+  updateContent: (path: string, value: any) => void;
+  saveChanges: () => Promise<void>;
 }
+
+const WebsiteContext = createContext<WebsiteContextProps | undefined>(undefined);
 
 // Varsayılan içerik
 const defaultContent: WebsiteContent = {
-  title: "EKREM & NISA",
-  coupleNames: ["ASDASD ASD", "EKREM GÜL"],
-  headerImage: "/images/couple.jpg",
-  welcomeMessage: "Join us as we celebrate our special day!",
-  heroLayout: "slideshow",
-  slideshowImages: ['/images/1.jpg', '/images/2.jpg'],
-  weddingDate: "MAY 30, 2024",
-  schedule: [
-    {
-      type: 'Welcome Event',
-      name: 'Welcome Event',
-      startDate: 'May 30, 2025',
-      startTime: '6:00 pm',
-      endTime: '11:45 pm',
-      venueName: 'Dear Irving Gramercy',
-      streetAddress: '55 Irving Pl',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10003',
-      country: 'United States',
-      isPublic: true,
-      allowRsvp: true
-    },
-    {
-      type: 'Ceremony',
-      name: 'Wedding Ceremony',
-      startDate: 'May 31, 2025',
-      startTime: '3:00 pm',
-      endTime: '4:00 pm',
-      venueName: 'Brooklyn Botanical Garden',
-      streetAddress: '990 Washington Ave',
-      city: 'Brooklyn',
-      state: 'NY',
-      zipCode: '11225',
-      country: 'United States',
-      isPublic: true,
-      allowRsvp: true
-    },
-    {
-      type: 'Reception',
-      name: 'Wedding Reception',
-      startDate: 'May 31, 2025',
-      startTime: '5:00 pm',
-      endTime: '11:00 pm',
-      venueName: 'The Liberty Warehouse',
-      streetAddress: '260 Conover St',
-      city: 'Brooklyn',
-      state: 'NY',
-      zipCode: '11231',
-      country: 'United States',
-      isPublic: true,
-      allowRsvp: true
-    }
-  ],
+  welcomeMessage: 'Join us as we celebrate our special day!',
+  coupleNames: ['Couple Name 1', 'Couple Name 2'],
+  weddingDate: 'MAY 30, 2024',
+  heroLayout: 'slideshow',
+  slideshowImages: [],
+  galleryHeaderImage: '',
+  galleryDescription: 'A few photos of us over the years.',
+  galleryPhotos: [],
+  galleryVideos: [],
+  galleryVisible: true,
+  showFeaturedGallery: true,
+  schedule: [],
   scheduleHeaderImage: '',
   scheduleDescription: ''
 };
 
-interface WebsiteContextType {
-  content: WebsiteContent;
-  updateContent: (path: string, value: any) => void;
-}
-
-const WebsiteContext = createContext<WebsiteContextType | undefined>(undefined);
-
 export function WebsiteProvider({ children }: { children: ReactNode }) {
-  const [content, setContent] = useState<WebsiteContent>(defaultContent);
+  const [content, setContent] = useState<WebsiteContent | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const router = useRouter();
+  const { data: session } = useSession();
+  const searchParams = useSearchParams();
+  const siteId = searchParams?.get('siteId');
 
-  // Belirli bir path'deki içeriği güncellemek için
+  // Düğün sitesi içeriğini getir
+  useEffect(() => {
+    async function fetchSiteContent() {
+      if (siteId && session) {
+        try {
+          setIsLoading(true);
+          const response = await fetch(`/api/wedding-sites/${siteId}`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            setContent(data.content || defaultContent);
+          } else {
+            console.error('Site içeriği alınamadı');
+            setContent(defaultContent);
+          }
+        } catch (error) {
+          console.error('Site içeriği alınırken hata oluştu:', error);
+          setContent(defaultContent);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    if (siteId && session) {
+      fetchSiteContent();
+    }
+  }, [siteId, session]);
+
+  // İçeriği güncelle ve otomatik kaydet
   const updateContent = (path: string, value: any) => {
+    if (!content) return;
+    
+    // Yerel güncelleme
     setContent(prevContent => {
-      // path örneği: "coupleNames.0" veya "schedule.1.title"
+      if (!prevContent) return defaultContent;
+      
       const pathParts = path.split('.');
       const newContent = {...prevContent};
       
@@ -115,10 +89,9 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
       for (let i = 0; i < pathParts.length - 1; i++) {
         const part = pathParts[i];
         if (!isNaN(Number(part))) {
-          // Dizin elemanı 
           current = current[Number(part)];
         } else {
-          // Nesne özelliği
+          if (!current[part]) current[part] = {};
           current = current[part];
         }
       }
@@ -132,10 +105,53 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
       
       return newContent;
     });
+    
+    // Değişikliklerden sonra otomatik kaydet (debounce eklenebilir)
+    const timer = setTimeout(() => {
+      saveChanges();
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  };
+
+  // Değişiklikleri sunucuya kaydet
+  const saveChanges = async (): Promise<void> => {
+    if (!siteId || !session || !content) return;
+    
+    setIsSaving(true);
+    
+    try {
+      const response = await fetch(`/api/wedding-sites/${siteId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content }),
+      });
+      
+      if (response.ok) {
+        setLastSaved(new Date());
+      } else {
+        console.error('Değişiklikler kaydedilemedi');
+      }
+    } catch (error) {
+      console.error('Değişiklikler kaydedilirken hata oluştu:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const value = {
+    content,
+    isLoading,
+    isSaving,
+    lastSaved,
+    updateContent,
+    saveChanges,
   };
 
   return (
-    <WebsiteContext.Provider value={{ content, updateContent }}>
+    <WebsiteContext.Provider value={value}>
       {children}
     </WebsiteContext.Provider>
   );
@@ -143,7 +159,7 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
 
 export function useWebsite() {
   const context = useContext(WebsiteContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useWebsite must be used within a WebsiteProvider');
   }
   return context;

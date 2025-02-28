@@ -1,18 +1,31 @@
+// app/page.tsx
 import Link from 'next/link';
+import { getAuthSession } from '@/lib/auth';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await getAuthSession();
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-3xl mx-auto text-center">
         <h1 className="text-4xl font-bold mb-6">Wedding Website Builder</h1>
         <p className="text-xl mb-8">Create your beautiful, customized wedding website in minutes.</p>
         
-        <Link 
-          href="/editor"
-          className="px-6 py-3 bg-black text-white rounded-full font-medium text-lg hover:bg-gray-800 transition-colors"
-        >
-          Start Building
-        </Link>
+        {session ? (
+          <Link 
+            href="/dashboard"
+            className="px-6 py-3 bg-black text-white rounded-full font-medium text-lg hover:bg-gray-800 transition-colors"
+          >
+            Go to Dashboard
+          </Link>
+        ) : (
+          <Link 
+            href="/auth/signin"
+            className="px-6 py-3 bg-black text-white rounded-full font-medium text-lg hover:bg-gray-800 transition-colors"
+          >
+            Start Building
+          </Link>
+        )}
         
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="p-6 border rounded-lg">
