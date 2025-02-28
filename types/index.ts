@@ -77,6 +77,7 @@ export interface ScheduleEvent {
 
 export interface WebsiteContent {
   welcomeMessage: string;
+  title : string;
   coupleNames: string[];
   weddingDate: string;
   heroLayout: string;

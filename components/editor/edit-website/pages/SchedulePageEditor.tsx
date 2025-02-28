@@ -19,6 +19,9 @@ export default function SchedulePageEditor() {
     header: true,
     events: true,
   });
+  const scheduleHeaderImage = content?.scheduleHeaderImage || ''; 
+  const schedule = content?.schedule || [];
+  const scheduleDescription = content?.scheduleDescription || '';
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<any>(null);
@@ -42,7 +45,7 @@ export default function SchedulePageEditor() {
   };
   
   const handleRemoveEvent = (index: number) => {
-    const newEvents = [...content.schedule];
+    const newEvents = schedule;
     newEvents.splice(index, 1);
     updateContent('schedule', newEvents);
   };
@@ -52,11 +55,11 @@ export default function SchedulePageEditor() {
     
     if (editingEvent && editingEvent.index !== undefined) {
       // Edit existing event
-      newEvents = [...content.schedule];
+      newEvents = schedule;
       newEvents[editingEvent.index] = event;
     } else {
       // Add new event
-      newEvents = [...content.schedule, event];
+      newEvents = schedule, event;
     }
     
     updateContent('schedule', newEvents);
@@ -98,9 +101,9 @@ export default function SchedulePageEditor() {
             <h3 className="font-medium mb-2">Main photo</h3>
             <div className="flex items-center space-x-4">
               <div className="w-32 h-20 bg-gray-200 rounded overflow-hidden">
-                {content.scheduleHeaderImage && (
+                {scheduleHeaderImage && (
                   <img 
-                    src={content.scheduleHeaderImage}
+                    src={scheduleHeaderImage}
                     alt="Schedule header"
                     className="w-full h-full object-cover"
                   />
@@ -130,7 +133,7 @@ export default function SchedulePageEditor() {
             <textarea 
               className="w-full border rounded-md p-3 text-sm min-h-[100px]"
               placeholder="Add a description for your schedule page"
-              value={content.scheduleDescription || "Here's what to expect during our wedding weekend. There will also be a printout of this schedule available in your hotel rooms. We can't wait to celebrate with you!"}
+              value={scheduleDescription || "Here's what to expect during our wedding weekend. There will also be a printout of this schedule available in your hotel rooms. We can't wait to celebrate with you!"}
               onChange={(e) => updateContent('scheduleDescription', e.target.value)}
             />
             <div className="text-right text-xs text-gray-500">0/1000</div>
@@ -145,7 +148,7 @@ export default function SchedulePageEditor() {
         onToggle={() => toggleSection('events')}
       >
         <div className="mt-4 space-y-4">
-          {content.schedule.map((event, index) => (
+          {schedule.map((event, index) => (
             <EventCard 
               key={index}
               event={event}

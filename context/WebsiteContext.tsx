@@ -11,6 +11,8 @@ interface WebsiteContextProps {
   isLoading: boolean;
   isSaving: boolean;
   lastSaved: Date | null;
+  saveStatus: 'idle' | 'saving' | 'saved' | 'error';
+  lastError: string | null;
   updateContent: (path: string, value: any) => void;
   saveChanges: () => Promise<void>;
 }
@@ -20,6 +22,7 @@ const WebsiteContext = createContext<WebsiteContextProps | undefined>(undefined)
 // Varsayılan içerik
 const defaultContent: WebsiteContent = {
   welcomeMessage: 'Join us as we celebrate our special day!',
+  title: 'Our Wedding',
   coupleNames: ['Couple Name 1', 'Couple Name 2'],
   weddingDate: 'MAY 30, 2024',
   heroLayout: 'slideshow',
@@ -40,6 +43,10 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [lastError, setLastError] = useState<string | null>(null);
+  const [saveTimer, setSaveTimer] = useState<NodeJS.Timeout | null>(null);
+  
   const router = useRouter();
   const { data: session } = useSession();
   const searchParams = useSearchParams();
@@ -106,19 +113,34 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
       return newContent;
     });
     
-    // Değişikliklerden sonra otomatik kaydet (debounce eklenebilir)
+    // Önceki timer'ı temizle
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+    }
+    
+    // Yeni timer oluştur
     const timer = setTimeout(() => {
       saveChanges();
     }, 2000);
     
-    return () => clearTimeout(timer);
+    setSaveTimer(timer);
   };
+
+  // useEffect cleanup için timer'ı temizle
+  useEffect(() => {
+    return () => {
+      if (saveTimer) {
+        clearTimeout(saveTimer);
+      }
+    };
+  }, [saveTimer]);
 
   // Değişiklikleri sunucuya kaydet
   const saveChanges = async (): Promise<void> => {
     if (!siteId || !session || !content) return;
     
     setIsSaving(true);
+    setSaveStatus('saving');
     
     try {
       const response = await fetch(`/api/wedding-sites/${siteId}`, {
@@ -131,11 +153,17 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
       
       if (response.ok) {
         setLastSaved(new Date());
+        setSaveStatus('saved');
+        // 3 saniye sonra 'idle' durumuna dön
+        setTimeout(() => setSaveStatus('idle'), 3000);
       } else {
-        console.error('Değişiklikler kaydedilemedi');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Değişiklikler kaydedilemedi');
       }
     } catch (error) {
       console.error('Değişiklikler kaydedilirken hata oluştu:', error);
+      setSaveStatus('error');
+      setLastError(error instanceof Error ? error.message : 'Bilinmeyen hata');
     } finally {
       setIsSaving(false);
     }
@@ -146,6 +174,8 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
     isLoading,
     isSaving,
     lastSaved,
+    saveStatus,
+    lastError,
     updateContent,
     saveChanges,
   };
